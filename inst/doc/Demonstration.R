@@ -1,0 +1,57 @@
+## -----------------------------------------------------------------------------
+library(SC24002027)
+# 模拟数据
+image_dim <- 10
+original_samples <- array(rnorm(1000 * image_dim^2, mean = 0.5, sd = 0.2), dim = c(1000, image_dim, image_dim))
+
+# 计算标准误差和置信区间
+result <- bootstrap_uncertainty_with_ci(original_samples, n_bootstrap = 500, ci_level = 0.95)
+
+# 查看结果
+se_matrix <- result$standard_error
+lower_matrix <- result$ci_lower
+upper_matrix <- result$ci_upper
+
+# 打印某像素的置信区间
+cat("置信区间 (95%) for pixel (1, 1): [", lower_matrix[1, 1], ", ", upper_matrix[1, 1], "]\n")
+
+# 可视化标准误差和置信区间
+library(ggplot2)
+library(reshape2)
+
+# 将矩阵转化为长格式
+se_df <- melt(se_matrix)
+lower_df <- melt(lower_matrix)
+upper_df <- melt(upper_matrix)
+
+# 标准误差的可视化
+ggplot(melt(se_matrix), aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "blue", high = "red") +
+  labs(title = "Standard Error Map", x = "X", y = "Y") +
+  theme_minimal()
+
+# 示例：置信区间长度的可视化
+ci_length <- upper_matrix - lower_matrix
+ggplot(melt(ci_length), aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "blue", high = "red") +
+  labs(title = "Confidence Interval Length", x = "X", y = "Y") +
+  theme_minimal()
+
+
+## -----------------------------------------------------------------------------
+# 设置参数
+rows <- 256
+cols <- 256
+means <- c(0.3, 0.7)        # 两个高斯分布的均值
+std_devs <- c(0.1, 0.1)     # 两个高斯分布的标准差
+weights <- c(0.5, 0.5)      # 权重，必须归一化
+iterations <- 500           # MCMC采样迭代次数
+
+# 生成散斑场
+speckle <- mcmcCustomMultiModalSpeckle(rows, cols, means, std_devs, weights, iterations)
+
+# 可视化
+image(speckle, col = gray.colors(256), main = "Custom Multi-Modal Speckle")
+

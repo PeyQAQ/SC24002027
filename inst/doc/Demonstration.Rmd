@@ -1,0 +1,74 @@
+---
+title: "Introduction to SC24002027"
+author: "Wang Peiyi"
+date: "2024-12-06"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to SC24002027}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+由于鬼成像重构过程中无显式的表达, 一般算法很难得到理论模型或极限。而bootstrap算法可以在实际成像中无法给出重构图像不确定度的理论表达式并且没有真实参考图像的情况下，有效地给出整张重构图像的不确定度估计分布图。
+bootstrap_uncertainty_with_ci函数用于使用bootstrap法生成一个重建图像每个像素的不确定度和置信区间。
+```{r}
+library(SC24002027)
+# 模拟数据
+image_dim <- 10
+original_samples <- array(rnorm(1000 * image_dim^2, mean = 0.5, sd = 0.2), dim = c(1000, image_dim, image_dim))
+
+# 计算标准误差和置信区间
+result <- bootstrap_uncertainty_with_ci(original_samples, n_bootstrap = 500, ci_level = 0.95)
+
+# 查看结果
+se_matrix <- result$standard_error
+lower_matrix <- result$ci_lower
+upper_matrix <- result$ci_upper
+
+# 打印某像素的置信区间
+cat("置信区间 (95%) for pixel (1, 1): [", lower_matrix[1, 1], ", ", upper_matrix[1, 1], "]\n")
+
+# 可视化标准误差和置信区间
+library(ggplot2)
+library(reshape2)
+
+# 将矩阵转化为长格式
+se_df <- melt(se_matrix)
+lower_df <- melt(lower_matrix)
+upper_df <- melt(upper_matrix)
+
+# 标准误差的可视化
+ggplot(melt(se_matrix), aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "blue", high = "red") +
+  labs(title = "Standard Error Map", x = "X", y = "Y") +
+  theme_minimal()
+
+# 示例：置信区间长度的可视化
+ci_length <- upper_matrix - lower_matrix
+ggplot(melt(ci_length), aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "blue", high = "red") +
+  labs(title = "Confidence Interval Length", x = "X", y = "Y") +
+  theme_minimal()
+
+```
+这个段代码使用随机生成的10*10的矩阵作为重建图的取样，然后使用bootstrap_uncertainty_with_ci函数得到每个像素点的不确定度以及置信区间，最后对结果可视化。
+
+多峰分布散斑的模拟在控制光束在散射介质内部的传输过程在医学成像、工业检测等领域中具有巨大的应用价值，双峰高斯分布散斑模拟可以用于这些领域中的光束调控和成像，mcmcCustomMultiModalSpeckle函数用于使用MCMC算法生成随机数并生成双峰高斯分布的散斑。
+```{r}
+# 设置参数
+rows <- 256
+cols <- 256
+means <- c(0.3, 0.7)        # 两个高斯分布的均值
+std_devs <- c(0.1, 0.1)     # 两个高斯分布的标准差
+weights <- c(0.5, 0.5)      # 权重，必须归一化
+iterations <- 500           # MCMC采样迭代次数
+
+# 生成散斑场
+speckle <- mcmcCustomMultiModalSpeckle(rows, cols, means, std_devs, weights, iterations)
+
+# 可视化
+image(speckle, col = gray.colors(256), main = "Custom Multi-Modal Speckle")
+```
+这段代码使用mcmcCustomMultiModalSpeckle函数生成了双峰高斯分布散斑，两个峰的均值分别为0.3和0.7，标准差均为0.1，权重为0.5.

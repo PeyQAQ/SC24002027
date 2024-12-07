@@ -1,0 +1,17 @@
+Package: SC24002027
+Type: Package
+Title: This R package is used to calculate the reconstructed image uncertainty using bootstrap method and to generate bimodal Gaussian distributed speckle using MCMC method
+Version: 1.0
+Date: 2024-12-06
+Author: Wang Peiyi
+Maintainer: Wang Peiyi <1291419649@qq.com>
+Description: Several R and Rcpp function are included in this package for illustration. 
+License: GPL (>= 2)
+Imports: Rcpp, microbenchmark, xtable, MASS, boot, bootstrap, DAAG, coda, lpSolve, ggplot2, reshape2, stats
+Suggests:knitr,rmarkdown
+VignetteBuilder: knitr
+LinkingTo: Rcpp
+RoxygenNote: 7.3.2
+Encoding: UTF-8
+URL: http://github.com/PeyQAQ/SC24002027
+BugReports: http://github.com/PeyQAQ/SC24002027/issues
